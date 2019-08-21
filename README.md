@@ -48,3 +48,22 @@ paramIdMap.put("004", "总成绩");
 FormulaToDrlConverter converter = new FormulaToDrlConverter(paramIdMap);
 converter.createDrl(info, condition, body, 0, formula);
 ```
+
+## 执行规则文件例子
+
+```
+AbstractDroolsContext adc = new ExampleContext();
+StatefulKnowledgeSession kSession = null;
+try {
+    OkDroolsConfig okDroolsConfig = new ExampleConfig();
+    kSession = adc.buildDroolsEnvironment();
+    kSession.setGlobal("book", "001");
+    adc.execDrools(kSession, null);
+} catch (IOException e) {
+    e.printStackTrace();
+} finally {
+    if (kSession != null) {
+        kSession.dispose();
+    }
+}
+```

@@ -168,21 +168,27 @@ public class FormulaToDrlConverter {
         }
         drl.append("    retract($p);\n");
         drl.append("end");
-        // 编译校验
-        Resource ruleResource = ResourceFactory.newByteArrayResource(drl.toString().getBytes());
-        kBuilder.add(ruleResource, ResourceType.DRL);
-        if (kBuilder.hasErrors()) {
-            LOG.error("编译drl文件失败！");
-            LOG.error(kBuilder.getErrors().toString());
+        
+        try {
+            // 编译校验
+            Resource ruleResource = ResourceFactory.newByteArrayResource(drl.toString().getBytes());
+            kBuilder.add(ruleResource, ResourceType.DRL);
+            if (kBuilder.hasErrors()) {
+                LOG.error("编译drl文件失败！");
+                LOG.error(kBuilder.getErrors().toString());
+                kBuilder.undo();
+                return false;
+            }
+            // 生成drl文件
+            String fileName = condition.name() + ".drl";
+            String tempFilePath = info.drlFilePath() + "\\";
+            writeDrlToFile(drl.toString(), tempFilePath, fileName);
             kBuilder.undo();
-            return false;
+            return true;
+        } finally {
+            variableMap.clear();
+            definedVariables.clear();
         }
-        // 生成drl文件
-        String fileName = condition.name() + ".drl";
-        String tempFilePath = info.drlFilePath() + "\\";
-        writeDrlToFile(drl.toString(), tempFilePath, fileName);
-        kBuilder.undo();
-        return true;
     }
 
     /**

@@ -50,7 +50,7 @@ public class Main {
         StatefulKnowledgeSession kSession = null;
         try {
             OkDroolsConfig okDroolsConfig = new ExampleConfig();
-            kSession = adc.buildDroolsEnvironment();
+            kSession = adc.buildDroolsEnvironment(okDroolsConfig);
             kSession.setGlobal("book", "001");
             adc.execDrools(kSession, null);
         } catch (IOException e) {

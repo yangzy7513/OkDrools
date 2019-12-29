@@ -14,6 +14,6 @@ public class ExampleRecorder implements ExecRecorder {
 
     @Override
     public void recordErrorMsg(ExecBaseBody body, String book, Exception e) {
-
+        e.printStackTrace();
     }
 }

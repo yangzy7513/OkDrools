@@ -26,19 +26,24 @@ import java.util.Collection;
  */
 public abstract class AbstractDroolsContext extends OkDroolsConfig {
 
-    private static final ThreadLocal<KnowledgeBuilder> KBUILDERS =
-            ThreadLocal.withInitial(() -> KnowledgeBuilderFactory.newKnowledgeBuilder());
-
+    private KnowledgeBuilder kb = KnowledgeBuilderFactory.newKnowledgeBuilder();
 
     /**
      * 构建运行环境
      *
-     * @param okDroolsConfig
      * @return
      * @throws IOException
      */
-    public StatefulKnowledgeSession buildDroolsEnvironment(OkDroolsConfig okDroolsConfig) throws IOException {
-        KnowledgeBuilder kb = KBUILDERS.get();
+    public StatefulKnowledgeSession buildDroolsEnvironment() throws IOException {
+        return buildDroolsEnvironment(this);
+    }
+
+    public StatefulKnowledgeSession buildDroolsEnvironment(OkDroolsConfig config) throws IOException {
+        KnowledgeBase knowledgeBase = getKnowledgeBase(config);
+        return knowledgeBase.newStatefulKnowledgeSession();
+    }
+
+    protected KnowledgeBase getKnowledgeBase(OkDroolsConfig okDroolsConfig) throws IOException {
         Collection<File> ruleFiles = getRuleFiles(okDroolsConfig.drlFilePath() + File.separator);
         String[] excludeRuleIds = excludeDrools();
         String filePath;
@@ -53,27 +58,17 @@ public abstract class AbstractDroolsContext extends OkDroolsConfig {
         }
         KnowledgeBase knowledgeBase = KnowledgeBaseFactory.newKnowledgeBase();
         knowledgeBase.addKnowledgePackages(kb.getKnowledgePackages());
-        return knowledgeBase.newStatefulKnowledgeSession();
-    }
-
-    /**
-     * 构建运行环境
-     *
-     * @return
-     * @throws IOException
-     */
-    public StatefulKnowledgeSession buildDroolsEnvironment() throws IOException {
-        return buildDroolsEnvironment(this);
+        return knowledgeBase;
     }
 
     /**
      * 执行计算逻辑
      *
-     * @param kieSession
+     * @param session
      * @param filter 规则过滤
      * @param params 其它参数
      */
-    public abstract void execDrools(StatefulKnowledgeSession kieSession,
+    public abstract void execDrools(StatefulKnowledgeSession session,
                                     AgendaFilter filter,
                                     String... params);
 
@@ -83,14 +78,6 @@ public abstract class AbstractDroolsContext extends OkDroolsConfig {
      * @return 通常是规则ID，因为文件名包含规则ID
      */
     public abstract String[] excludeDrools();
-
-
-    /**
-     * 销毁加载的drl
-     */
-    public void undo() {
-        KBUILDERS.get().undo();
-    }
 
     /**
      * 获取目录下的规则文件

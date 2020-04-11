@@ -47,7 +47,7 @@ public class DroolsUtils {
      * js版本：提供基础的四则运算和三角函数运算(JsEvalEngine)
      * fel版本：除了js版本有的功能，支持自定义函数
      */
-    private static final ThreadLocal<EvalEngine> EVAL_ENGINE = ThreadLocal.withInitial(() -> new FelEvalEngine());
+    private static final EvalEngine EVAL_ENGINE = new FelEvalEngine();
 
     /**
      * 执行计算
@@ -57,11 +57,10 @@ public class DroolsUtils {
      */
     public static Double exec(Object str, String book, ExecBaseBody body) {
         Double dResult = 0D;
-        EvalEngine jse = EVAL_ENGINE.get();
         try {
             String execStr = String.valueOf(str);
-            jse.setEvalAttr(CONTEXT_BODY, body);
-            Object result = jse.eval(execStr);
+            EVAL_ENGINE.setEvalAttr(CONTEXT_BODY, body);
+            Object result = EVAL_ENGINE.eval(execStr);
             dResult = Double.parseDouble(String.valueOf(result));
             if (Double.isNaN(dResult)) {
                 return 0D;
@@ -69,7 +68,7 @@ public class DroolsUtils {
             if (dResult == Double.POSITIVE_INFINITY || dResult == Double.NEGATIVE_INFINITY) {
                 throw new ScriptException("计算出现除0操作.");
             }
-            if (jse instanceof FelEvalEngine) {
+            if (EVAL_ENGINE instanceof FelEvalEngine) {
                 if (execStr.contains("ROUND")) {
                     return dResult;
                 }
